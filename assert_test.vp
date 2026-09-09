@@ -1,0 +1,27 @@
+attacker[active]
+
+principal Alice[
+
+    generates a
+    A_ = PUBKEY(a)
+    hash_a = HASH(a)
+]
+
+Alice -> Bob: A_, hash_a
+
+principal Bob[
+    generates b
+    B_ = PUBKEY(b)
+    hash_b = HASH(b)
+
+]
+
+Bob -> Alice: B_, hash_b
+
+principal Alice[
+    _ = ASSERT(DH_KEX(A_, hash_b), DH_KEX(B_, hash_a))?
+]
+
+queries[
+    confidentiality? a
+]
