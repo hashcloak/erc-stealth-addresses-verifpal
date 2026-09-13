@@ -1,0 +1,55 @@
+attacker[active]
+
+principal Receiver[
+    knows private private_spend_key
+    knows private private_view_key
+
+    public_spend_key = PUBKEY(private_spend_key)
+    public_view_key = PUBKEY(private_view_key)
+
+]
+
+Receiver -> SmartContract: public_spend_key, public_view_key
+
+//principal SmartContract[
+//    _ = SIGNVERIF(pk, meta_stealth_address, meta_stealth_address_signatures)
+//]
+
+SmartContract -> Sender: public_spend_key, public_view_key
+
+
+principal Sender[
+    generates private_ephemeral_key
+    public_ephemeral_key = PUBKEY(private_ephemeral_key)
+
+    secret = DH_KEX(public_view_key, private_ephemeral_key) 
+    s = HASH(secret)
+    view_tag = HASH(s)
+    hashed_s = HASH(s)
+    pub_stealth_key =  PUBKEY(view_tag)
+
+]
+
+principal SmartContract[
+//    knows public view_tag
+]
+
+Sender -> SmartContract: pub_stealth_key, public_ephemeral_key, view_tag
+SmartContract -> Receiver: pub_stealth_key, public_ephemeral_key, view_tag
+
+principal Receiver[
+    new_s = DH_KEX(public_ephemeral_key, private_view_key)
+    hashed_new_s = HASH(new_s)
+    new_view_tag = HASH(hashed_new_s)
+    locally_derived_pub_stealth_key = PUBKEY(new_view_tag)
+   
+]
+
+//principal SmartContract[]
+
+queries[
+    confidentiality? s
+    confidentiality? new_s
+    equivalence? locally_derived_pub_stealth_key, pub_stealth_key
+    unlinkability? locally_derived_pub_stealth_key, pub_stealth_key
+]
